@@ -9,8 +9,6 @@ declare(strict_types=1);
 namespace App\Chapter1;
 
 
-use function Couchbase\defaultDecoder;
-
 class Customer
 {
     private $name;
@@ -42,37 +40,51 @@ class Customer
         $result = "Rental Record for {$this->getName()}" . PHP_EOL;
 
         foreach ($this->rentals as $rental) {
-            $thisAmount = 0;
-            switch ($rental->getMovie()->getPriceCode()) {
-                case Movie::REGULAR:
-                    $thisAmount += 2;
-                    if ($rental->getDeyRented() > 2) {
-                        $thisAmount += ($rental->getDeyRented() - 2) * 1.5;
-                    }
-                    break;
-                case Movie::NEW_RELEASE:
-                    $thisAmount += $rental->getDeyRented() * 3;
-                    break;
-                case Movie::CHILDRENS:
-                    $thisAmount += 1.5;
-                    if ($rental->getDeyRented() > 3) {
-                        $thisAmount += ($rental->getDeyRented() - 3) * 1.5;
-                    }
-                    break;
-            }
-            //レンタルポイントを加算
-            $frequentRenterPoints++;
-            //新作を二日以上借りた場合はボーナスポイント
-            if (($rental->getMovie()->getPriceCode() === Movie::NEW_RELEASE) && $rental->getDeyRented() > 1) {
-                $frequentRenterPoints++;
-            }
             //この貸し出しに関する数値の表示
-            $result .= "\t {$rental->getMovie()->getTitle()} \t {$thisAmount}" . PHP_EOL;
-            $totalAmount += $thisAmount;
+            $result .= "\t {$rental->getMovie()->getTitle()} \t {$rental->getCharge()}" . PHP_EOL;
         }
         //フッタ部分の追加
-        $result .= "Amount owed is {$totalAmount}" . PHP_EOL;
-        $result .= "You earned {$frequentRenterPoints} frequent renter points";
+        $result .= "Amount owed is {$this->getTotalCharge()}" . PHP_EOL;
+        $result .= "You earned {$this->getTotalFrequentRenterPoints()} frequent renter points";
+        return $result;
+    }
+
+    /**
+     * @return string
+     */
+    public function htmlStatement(): string
+    {
+        $result = "<h1>Rentals for <em>{$this->name}</em></h1>" . PHP_EOL;
+        foreach ($this->rentals as $rental) {
+            $result .= "<p>{$rental->getMovie()->getTitle()}: {$rental->getCharge()}</p>" . PHP_EOL;
+        }
+
+        $result .= "<p>You owe <em>{$this->getTotalCharge()}</em></p>" . PHP_EOL;
+        $result .= "<p>On this rental you earned <em>{$this->getTotalFrequentRenterPoints()}</em> frequent renter ponts</p>";
+        return $result;
+    }
+
+    /**
+     * @return float
+     */
+    private function getTotalCharge(): float
+    {
+        $result = 0;
+        foreach ($this->rentals as $rental) {
+            $result += $rental->getCharge();
+        }
+        return $result;
+    }
+
+    /**
+     * @return int
+     */
+    private function getTotalFrequentRenterPoints(): int
+    {
+        $result = 0;
+        foreach ($this->rentals as $rental) {
+            $result += $rental->getFrequentRenterPoints();
+        }
         return $result;
     }
 }

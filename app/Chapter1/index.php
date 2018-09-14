@@ -21,3 +21,4 @@ $customer = new Customer('test');
 $customer->addRental($rental1);
 $customer->addRental($rental2);
 echo $customer->statement();
+echo $customer->htmlStatement();

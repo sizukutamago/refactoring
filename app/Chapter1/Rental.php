@@ -23,7 +23,7 @@ class Rental
         $this->daysRented = $daysRented;
     }
 
-    public function getDeyRented(): int
+    public function day(): int
     {
         return $this->daysRented;
     }
@@ -31,5 +31,21 @@ class Rental
     public function getMovie(): Movie
     {
         return $this->movie;
+    }
+
+    /**
+     * @return float
+     */
+    public function getCharge(): float
+    {
+        return $this->movie->getCharge($this->daysRented);
+    }
+
+    /**
+     * @return int
+     */
+    public function getFrequentRenterPoints(): int
+    {
+        return $this->movie->getFrequentRenterPoints($this->daysRented);
     }
 }
